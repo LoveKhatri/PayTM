@@ -13,7 +13,7 @@ const transferSchema = zod.object({
 })
 
 accountRouter.get('/balance', authMiddleware, async (req, res) => {
-    const account = Account.findOne({ id: req.userId })
+    const account = await Account.findOne({ id: req.userId })
 
     return res.status(200).json({ balance: account.balance })
 })
@@ -32,7 +32,7 @@ accountRouter.post('/transfer', authMiddleware, async (req, res) => {
 
     try {
         const account = await Account.findOne({ userId: req.userId }).session(session)
-
+        console.log(account)
         if (!account || account.balance < amount) {
             await session.abortTransaction();
             return res.status(400).json({ error: 'Insufficient balance' })
@@ -49,11 +49,13 @@ accountRouter.post('/transfer', authMiddleware, async (req, res) => {
         await Account.updateOne({ userId: to }, { $inc: { balance: amount } }).session(session)
 
         await session.commitTransaction()
+
+        return res.status(200).json({ message: 'Transfer successful' })
     } catch (e) {
+        console.log(e)
         await session.abortTransaction()
         return res.status(500).json({ error: 'Internal server error' })
     }
-    
 })
 
 module.exports = accountRouter

@@ -26,12 +26,11 @@ const authMiddleware = async (req, res, next) => {
             })
         }
 
-        // ! Passing the value to next function
         req.userId = verified.userId
-
         next()
     } catch (e) {
-        return res.status(403).json({})
+        console.log(e)
+        return res.status(403).json({ error: e })
     }
 }
 

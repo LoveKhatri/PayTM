@@ -9,7 +9,7 @@ const authMiddleware = require('../middlewares/user')
 
 const signUpScheme = zod.object({
     username: zod.string().email(),
-    password: zod.string(),
+    password: zod.string().min(6),
     firstName: zod.string(),
     lastName: zod.string()
 })
@@ -36,7 +36,7 @@ userRouter.post('/signup', async (req, res) => {
         })
     }
 
-    const alreadyExists = User.findOne({ username: body.username })
+    const alreadyExists = await User.findOne({ username: body.username })
 
     if (alreadyExists) {
         return res.status(411).json({ message: "Username Already Taken" })
@@ -70,7 +70,7 @@ userRouter.post('/signin', async (req, res) => {
             })
         }
 
-        const user = User.findOne({ username: body.username, password: body.password })
+        const user = await User.findOne({ username: body.username, password: body.password })
 
         if (!user) {
             return res.status(404).json({
@@ -78,7 +78,12 @@ userRouter.post('/signin', async (req, res) => {
             })
         }
 
-        const token = jwt.sign({ userId: user._id }, JWT_SECRET)
+        const data = {
+            userId: user._id,
+        }
+
+        const token = jwt.sign(data, JWT_SECRET, { expiresIn: '1h'})
+        console.log("token", token)
 
         return res.status(200).json({ token: token })
     }
