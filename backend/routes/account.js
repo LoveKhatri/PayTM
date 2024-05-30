@@ -1,8 +1,6 @@
 const { Router } = require("express");
 const zod = require('zod');
-const { User, Account } = require("../db");
-const jwt = require('jsonwebtoken');
-const JWT_SECRET = require("../config");
+const { Account } = require("../db");
 const authMiddleware = require("../middlewares/user");
 const { default: mongoose } = require("mongoose");
 const accountRouter = Router();
@@ -13,8 +11,10 @@ const transferSchema = zod.object({
 })
 
 accountRouter.get('/balance', authMiddleware, async (req, res) => {
+    console.log(req.userId)
     const account = await Account.findOne({ id: req.userId })
-
+    console.log(account)
+    if (!account) return res.status(404).json({ error: 'Account not found' })
     return res.status(200).json({ balance: account.balance })
 })
 
@@ -32,7 +32,7 @@ accountRouter.post('/transfer', authMiddleware, async (req, res) => {
 
     try {
         const account = await Account.findOne({ userId: req.userId }).session(session)
-        console.log(account)
+
         if (!account || account.balance < amount) {
             await session.abortTransaction();
             return res.status(400).json({ error: 'Insufficient balance' })

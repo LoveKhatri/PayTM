@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 
-mongoose.connect('mongodb://localhost:27017/paytm?retryWrites=false')
+mongoose.connect('mongodb://localhost:27017/paytm?replicaSet=rs0')
 
 const userSchema = mongoose.Schema({
     username: {
